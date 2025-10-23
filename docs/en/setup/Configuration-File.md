@@ -145,6 +145,7 @@ trigger:
   action: http      # The action of the trigger. support HTTP invoke.
   interval: 3s      # Trigger the action every 3 seconds.
   times: 5          # The retry count before the request success.
+  stop-on-reach-times:  false # Whether to stop the trigger when the retry count is reached. Defaults to false.
   url: http://apache.skywalking.com/ # Http trigger url link.
   method: GET       # Http trigger method.
   headers:
