@@ -30,18 +30,20 @@ import (
 )
 
 type httpAction struct {
-	interval      time.Duration
-	times         int
-	url           string
-	method        string
-	body          string
-	headers       map[string]string
-	executedCount int
-	stopCh        chan struct{}
-	client        *http.Client
+	interval         time.Duration
+	times            int
+	stopOnReachTimes bool
+	url              string
+	method           string
+	body             string
+	headers          map[string]string
+	executedCount    int
+	stopCh           chan struct{}
+	client           *http.Client
 }
 
-func NewHTTPAction(intervalStr string, times int, url, method, body string, headers map[string]string) (Action, error) {
+func NewHTTPAction(intervalStr string, times int, stopOnReachTimes bool, url, method, body string,
+	headers map[string]string) (Action, error) {
 	interval, err := time.ParseDuration(intervalStr)
 	if err != nil {
 		return nil, err
@@ -55,15 +57,16 @@ func NewHTTPAction(intervalStr string, times int, url, method, body string, head
 	url = os.ExpandEnv(url)
 
 	return &httpAction{
-		interval:      interval,
-		times:         times,
-		url:           url,
-		method:        strings.ToUpper(method),
-		body:          body,
-		headers:       headers,
-		executedCount: 0,
-		stopCh:        make(chan struct{}, 1),
-		client:        &http.Client{},
+		interval:         interval,
+		times:            times,
+		stopOnReachTimes: stopOnReachTimes,
+		url:              url,
+		method:           strings.ToUpper(method),
+		body:             body,
+		headers:          headers,
+		executedCount:    0,
+		stopCh:           make(chan struct{}, 1),
+		client:           &http.Client{},
 	}, nil
 }
 
@@ -87,7 +90,7 @@ func (h *httpAction) Do() chan error {
 					result <- err
 					sent = true
 				}
-				if h.times == h.executedCount {
+				if h.times == h.executedCount && h.stopOnReachTimes {
 					return
 				}
 			case <-h.stopCh:

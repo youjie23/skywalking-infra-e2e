@@ -66,6 +66,7 @@ func CreateTriggerAction() (trigger.Action, error) {
 		return trigger.NewHTTPAction(
 			t.Interval,
 			t.Times,
+			t.StopOnReachTimes,
 			t.URL,
 			t.Method,
 			t.Body,
